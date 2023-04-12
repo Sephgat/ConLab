@@ -48,13 +48,21 @@ function init()
     // show the backs of all of the cards by calling showAllBacks
     
     fillImages();
+    
     //console.log(images)
     shuffleImages();
     //console.log(images)
     showMatches();
-    enableAllRemainingCards();
+    enableAllCards();
+    //enableAllRemainingCards();
     showAllBacks();
-
+    /*
+    for (var i = 0; i < images.length; i++) {
+        var cardImage = imagePath + images[i];
+        var card =  document.getElementById(i);
+        card.style.backgroundImage = 'url(' + cardImage + ')';
+    }
+    */
 }
 
 // shows the number of matches and tries in the status element on the page
@@ -80,7 +88,7 @@ function fillImages() {
     let index = 0;
     for(let v = 0; v < values.length; v++){
         for(let s  = 0; s < suits.length; s++){
-            images[index] = "card" + values[v] + suits[s] + ".jpeg";
+            images[index] = "card" + values[v] + suits[s] + ".jpg";
             index++;
         }
     }
@@ -111,12 +119,24 @@ function enableAllCards() {
         // set the onclick property for the current element in cards to handleClick
         // set the style.cursor to 'pointer' too
     // end for loop
+    var cards = document.getElementsByName("card");
+    for (var i = 0; i< cards.length; i++){
+        cards[i].onclick = handleClick;
+        cards[i].style.cursor = 'pointer';
+    }
 }
 
 // enables (see enable all) only the cards whose backgroundImage
 // style property is not 'none'
 function enableAllRemainingCards() {
     // create a variable called cards and set it equal to the elements on the page with a name of card
+    var cards = document.getElementsByName("card");
+    for (var i = 0; i< cards.length; i++){
+        if (cards[i].style.backgroundImage != 'none'){
+            cards[i].onclick = handleClick;
+            cards[i].style.cursor = 'pointer';
+        }
+    }
     // create a for loop that iterates through cards
         // if the style.backgroundImage of the current element in cards is not 'none'
             // set the onclick property for the current element in cards to handleClick
@@ -151,10 +171,15 @@ function showAllBacks() {
 // --------------------------------- PART 2 --------------------------------------- //
 // this is the function that fires when the user clicks on a card
 function handleClick() {
+    
     // declare the variable index and assign it to the current card's id attribute
+    var index = this.id;
     // declare cardImage and assign it to the image for this card
+    var cardImage = imagePath + images[index];
+    this.style.backgroundImage = 'url(' + cardImage + ')';
     // set the backgroundImage to the url of the cardImage
     // disable the card 
+    disableCard(index);
     // if this is the first card picked
     //      assign firstPick to index
     // else
@@ -162,6 +187,14 @@ function handleClick() {
     //      disable all of the cards
     //      set a timer for 2 seconds.  Call checkCards when it fires.
     // end if
+    if (firstPick == -1){
+        firstPick = index;
+    }
+    else{
+        secondPick = index;
+        disableAllCards();
+        setTimeout(checkCards, 1000);
+    }
 }
 
 // disable one card based on it's index
@@ -173,6 +206,10 @@ function disableCard(index) {
 
 // disable all of the cards
 function disableAllCards() {
+    var cards = document.getElementsByName("card");
+    for (var i = 0; i< cards.length; i++){
+        disableCard(i);
+    }
 
 }
 // END PART 2 - TEST TO HERE //
@@ -181,6 +218,25 @@ function disableAllCards() {
 // checks the 2 cards that have been picked for matches 
 function checkCards() {
     // increment the number of tries
+    tries++;
+    if (isMatch() == true){
+        matches++;
+        removeCard(firstPick);
+        removeCard(secondPick);
+        if (matches < 10){
+            enableAllRemainingCards();
+        }
+        
+
+    }
+    else{
+        showBack(firstPick);
+        showBack(secondPick);
+        enableAllRemainingCards();
+    }
+    showMatches()
+    firstPick = -1;
+    secondPick = -1;
     // if the 2 cards match
     //      increment the number of matches
     //      remove the first(pick) card from the board
@@ -203,12 +259,17 @@ function checkCards() {
 // cardvs.jpg is the pattern for card file names
 function isMatch() {
 
+    if (images[firstPick].substr(4, 1) == images[secondPick].substr(4, 1))
+        return true;
+    else
+        return false;
 }
 
 // removes one card from the board based on it's index
 // set the backgroundImage to 'none' to remove the card
 function removeCard(index) {
-
+    var card = document.getElementById(index);
+    card.style.backgroundImage = 'none'
 }
 // END PART 3 - TEST THE ENTIRE APP //
 
